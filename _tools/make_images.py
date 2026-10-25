@@ -2,8 +2,8 @@
 
 Run again whenever the logo, icon, feature graphics or screenshots change:
 
-    python _tools/make_images.py                 # source: ../BlockBoss
-    python _tools/make_images.py D:/path/BlockBoss
+    python _tools/make_images.py                 # sources: ../BlockBoss and ../PixelPort
+    python _tools/make_images.py D:/path/BlockBoss D:/path/PixelPort
 
 Needs Pillow (pip install pillow). Writes only into assets/img and the site root
 (favicon.ico, apple-touch-icon.png).
@@ -16,11 +16,13 @@ from PIL import Image, ImageDraw
 
 SITE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(SITE), "BlockBoss")
+PIXEL = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(SITE), "PixelPort")
 STORE = os.path.join(GAME, "Store")
 LOGO = os.path.join(GAME, "Assets", "_CraneCity", "Art", "Logo", "retiverse_logo.png")
 
 IMG = os.path.join(SITE, "assets", "img")
 CC = os.path.join(IMG, "crane-city")
+PP = os.path.join(IMG, "pixel-port")
 CREAM = (0xFE, 0xFC, 0xF3)
 
 # Regions of the 1254x1254 logo: the whole artwork and the orange eye mark alone.
@@ -87,6 +89,29 @@ def og_from_banner(src, dst):
     out.save(dst, "JPEG", quality=86, optimize=True, progressive=True)
 
 
+def pixel_port():
+    """Pixel Port (Docs/GooglePlay: one language-neutral banner, screenshots per language)."""
+    play = os.path.join(PIXEL, "Docs", "GooglePlay")
+    os.makedirs(PP, exist_ok=True)
+    icon = Image.open(os.path.join(play, "icon_512.png")).convert("RGB")
+    icon.save(os.path.join(PP, "icon-512.png"), optimize=True)
+    save_webp(icon, os.path.join(PP, "icon-256.webp"), 256)
+    banner = os.path.join(play, "feature_graphic_1024x500.png")
+    fg = Image.open(banner).convert("RGB")
+    save_webp(fg, os.path.join(PP, "feature-1024.webp"), 1024)
+    save_webp(fg, os.path.join(PP, "feature-640.webp"), 640)
+    # The banner's edges have posts and signs, so cover-crop it instead of stretching the edge rows.
+    og = fg.resize((round(fg.width * 630 / fg.height), 630), Image.LANCZOS)
+    left = (og.width - 1200) // 2
+    og.crop((left, 0, left + 1200, 630)).save(os.path.join(PP, "og.jpg"), "JPEG", quality=86, optimize=True, progressive=True)
+    for lang in ("en", "tr"):
+        shots = sorted(glob.glob(os.path.join(play, "screenshots", lang, "*.png")))
+        for i, path in enumerate(shots, 1):
+            shot = Image.open(path).convert("RGB")
+            for width in (360, 720):
+                save_webp(shot, os.path.join(PP, f"shot-{lang}-{i}-{width}.webp"), width, quality=80)
+
+
 def main():
     os.makedirs(CC, exist_ok=True)
     logo = Image.open(LOGO).convert("RGBA")
@@ -134,6 +159,8 @@ def main():
             shot = Image.open(path).convert("RGB")
             for width in (360, 720):
                 save_webp(shot, os.path.join(CC, f"shot-{lang}-{i}-{width}.webp"), width, quality=80)
+
+    pixel_port()
 
     total = sum(os.path.getsize(p) for p in glob.glob(os.path.join(IMG, "**", "*.*"), recursive=True))
     print(f"assets/img: {total / 1024:.0f} KB")

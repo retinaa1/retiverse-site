@@ -43,6 +43,7 @@ export function context(cfg, lang, path, assetVersion) {
 const NAV = [
   { path: "/#games", en: "Games", tr: "Oyunlar" },
   { path: "/crane-city/", en: "Crane City", tr: "Crane City" },
+  { path: "/pixel-port/", en: "Pixel Port", tr: "Pixel Port" },
   { path: "/support/", en: "Support", tr: "Destek" },
 ];
 
@@ -93,6 +94,7 @@ function footer(c) {
       <div>
         <h2>${c.t("Games", "Oyunlar")}</h2>
         ${link("/crane-city/", "Crane City", "Crane City")}
+        ${link("/pixel-port/", "Pixel Port", "Pixel Port")}
       </div>
       <div>
         <h2>${c.t("Help", "Yardım")}</h2>
@@ -104,6 +106,7 @@ function footer(c) {
         <h2>${c.t("Legal", "Yasal")}</h2>
         ${link("/privacy/", "Privacy", "Gizlilik")}
         ${link("/crane-city/privacy/", "Crane City privacy policy", "Crane City gizlilik politikası")}
+        ${link("/pixel-port/privacy/", "Pixel Port privacy policy", "Pixel Port gizlilik politikası")}
         ${link("/terms/", "Terms of use", "Kullanım koşulları")}
       </div>
     </nav>

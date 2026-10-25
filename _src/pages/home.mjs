@@ -1,4 +1,5 @@
 import { NAME, SHORT, playCta } from "../crane.mjs";
+import { NAME as PIXEL, SHORT as PIXEL_SHORT, playCta as pixelCta } from "../pixel.mjs";
 
 export default {
   path: "/",
@@ -63,8 +64,8 @@ export default {
         icon: "globe",
         title: c.t("Made for everyone", "Herkes için"),
         text: c.t(
-          "Crane City speaks 7 languages: English, Turkish, German, Spanish, French, Portuguese and Italian.",
-          "Crane City 7 dil konuşuyor: Türkçe, İngilizce, Almanca, İspanyolca, Fransızca, Portekizce ve İtalyanca.",
+          "Crane City and Pixel Port speak 7 languages: English, Turkish, German, Spanish, French, Portuguese and Italian.",
+          "Crane City ve Pixel Port 7 dil konuşuyor: Türkçe, İngilizce, Almanca, İspanyolca, Fransızca, Portekizce ve İtalyanca.",
         ),
       },
     ];
@@ -120,14 +121,26 @@ export default {
           </div>
         </div>
       </article>
-      <article class="teaser-card">
-        <div class="teaser-blocks" aria-hidden="true"><span></span><span></span><span></span></div>
-        <span class="soon-tag">${c.t("Coming soon", "Yakında")}</span>
-        <h3>Pixel Port</h3>
-        <p>${c.t(
-          "Our next game is already in the works. New games will show up on this page first.",
-          "Sıradaki oyunumuz yapım aşamasında. Yeni oyunlarımız ilk olarak bu sayfada görünecek.",
-        )}</p>
+      <article class="game-card">
+        <a class="game-card-media" href="${c.href("/pixel-port/")}" tabindex="-1" aria-hidden="true">
+          <img src="/assets/img/pixel-port/feature-640.webp" srcset="/assets/img/pixel-port/feature-640.webp 640w, /assets/img/pixel-port/feature-1024.webp 1024w" sizes="(max-width: 860px) 92vw, 620px" width="640" height="313" alt="" loading="lazy" decoding="async">
+        </a>
+        <div class="game-card-body">
+          <img class="app-icon" src="/assets/img/pixel-port/icon-256.webp" width="88" height="88" alt="${c.t("Pixel Port app icon", "Pixel Port uygulama simgesi")}" loading="lazy">
+          <div>
+            <h3><a href="${c.href("/pixel-port/")}">${PIXEL}</a></h3>
+            <p>${PIXEL_SHORT[c.lang]}</p>
+            <ul class="chips">
+              <li>${c.t("250 levels", "250 bölüm")}</li>
+              <li>${c.t("New twist every 50", "Her 50 bölümde yeni mekanik")}</li>
+              <li>${c.t("Plays offline", "İnternetsiz oynanır")}</li>
+            </ul>
+            <div class="actions">
+              ${pixelCta(c)}
+              <a class="btn btn-ghost" href="${c.href("/pixel-port/")}">${c.t("Explore the game", "Oyunu incele")} <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </div>
       </article>
     </div>
   </div>

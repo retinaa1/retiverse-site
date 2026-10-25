@@ -29,13 +29,22 @@ export const CITIES = [
 ];
 
 export function playUrl(c) {
-  return `${c.cfg.crane.playStoreUrl}&hl=${c.lang}`;
+  return storeUrl(c, c.cfg.crane);
+}
+
+export function playCta(c) {
+  return storeCta(c, c.cfg.crane);
+}
+
+// Shared by every game page: `game` is that game's block in config.mjs.
+export function storeUrl(c, game) {
+  return `${game.playStoreUrl}&hl=${c.lang}`;
 }
 
 // Google Play button once the game is live, a "coming soon" badge before that.
-export function playCta(c) {
-  if (c.cfg.crane.playStoreLive) {
-    return `<a class="play-btn" href="${playUrl(c)}" rel="noopener">
+export function storeCta(c, game) {
+  if (game.playStoreLive) {
+    return `<a class="play-btn" href="${storeUrl(c, game)}" rel="noopener">
       <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span><small>${c.t("Get it on", "Hemen indir")}</small>Google Play</span>
     </a>`;

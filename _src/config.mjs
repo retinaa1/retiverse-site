@@ -19,6 +19,12 @@ export default {
     testerSignup: false,
   },
 
+  pixel: {
+    // Pixel Port Google Play'de yayına girince true yap (Crane City'deki gibi düğme gerçek mağaza linkine döner).
+    playStoreLive: false,
+    playStoreUrl: "https://play.google.com/store/apps/details?id=com.retiversegames.pixelport",
+  },
+
   // AdMob yayıncı kimliği, ör. "pub-1234567890123456". Boşken app-ads.txt yayınlanmaz.
   // (Kimliksiz bir app-ads.txt reklamları engelleyebilir; bu yüzden sahte satır koymuyoruz.)
   admobPublisherId: "",

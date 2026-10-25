@@ -57,6 +57,34 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://retiverse.com/crane-city/delete-data/"/>
   </url>
   <url>
+    <loc>https://retiverse.com/pixel-port/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://retiverse.com/pixel-port/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://retiverse.com/tr/pixel-port/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://retiverse.com/pixel-port/"/>
+  </url>
+  <url>
+    <loc>https://retiverse.com/tr/pixel-port/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://retiverse.com/pixel-port/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://retiverse.com/tr/pixel-port/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://retiverse.com/pixel-port/"/>
+  </url>
+  <url>
+    <loc>https://retiverse.com/pixel-port/privacy/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://retiverse.com/pixel-port/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://retiverse.com/tr/pixel-port/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://retiverse.com/pixel-port/privacy/"/>
+  </url>
+  <url>
+    <loc>https://retiverse.com/tr/pixel-port/privacy/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://retiverse.com/pixel-port/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://retiverse.com/tr/pixel-port/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://retiverse.com/pixel-port/privacy/"/>
+  </url>
+  <url>
     <loc>https://retiverse.com/privacy/</loc>
     <lastmod>2026-10-25</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://retiverse.com/privacy/"/>

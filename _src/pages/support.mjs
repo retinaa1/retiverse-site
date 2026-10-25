@@ -23,11 +23,31 @@ function faq(c) {
       ];
 }
 
+function pixelFaq(c) {
+  const policy = c.href("/pixel-port/privacy/");
+  return c.lang === "tr"
+    ? [
+        ["Oyunu yeniden yükledim, ilerlemem gitti.", `<p>Pixel Port ilerlemeni (bölümler, altınlar, güçler, ayarlar) yalnızca cihazında saklar. Oyunu kaldırmak ya da verilerini temizlemek bunları siler; bulut kaydı olmadığı için geri getiremiyoruz.</p>`],
+        ["Canlarım bitti, ne yapabilirim?", `<p>Canlar zamanla kendiliğinden dolar. Ana ekranda kalplere dokunarak bir sonraki canın ne zaman geleceğini görebilir, istersen altınla hemen doldurabilirsin.</p>`],
+        ["Bir bölümde takıldım.", `<p>Vinç, Ekstra İskele ve Öne Al güçlerini dene; yeni güçleri günlük sandıktan ve mağazadan alabilirsin. Oyunun üst kısmındaki hız düğmesiyle 1x, 1.5x ve 2x arasında geçiş yapabilirsin.</p>`],
+        ["Sesi ya da titreşimi nasıl kapatırım?", `<p>Oyun sırasında duraklatma menüsünden ya da ana ekrandaki Ayarlar'dan.</p>`],
+        ["Verilerimi nasıl sildiririm?", `<p>Pixel Port bize hiçbir veri göndermez, bu yüzden bizde silinecek bir verin yoktur. Cihazındaki kaydı silmek için oyunu kaldırman ya da uygulama verilerini temizlemen yeterli. Ayrıntılar: <a href="${policy}">Pixel Port gizlilik politikası</a>.</p>`],
+      ]
+    : [
+        ["I reinstalled the game and lost my progress.", `<p>Pixel Port saves your progress (levels, coins, powers, settings) only on your device. Uninstalling the game or clearing its data deletes it, and because there is no cloud save, we can't restore it.</p>`],
+        ["I ran out of lives. What can I do?", `<p>Lives refill on their own over time. Tap the hearts on the main screen to see when the next one arrives, or refill them right away with coins.</p>`],
+        ["I'm stuck on a level.", `<p>Try the Crane, Extra Berth and Bring Forward powers; you can get more from the daily chest and the shop. The speed button at the top of the game switches between 1x, 1.5x and 2x.</p>`],
+        ["How do I turn off sound or vibration?", `<p>In the pause menu during a level, or in Settings on the main screen.</p>`],
+        ["How do I get my data deleted?", `<p>Pixel Port doesn't send us any data, so we hold nothing to delete. To remove the save on your device, uninstall the game or clear its app data. Details: <a href="${policy}">Pixel Port privacy policy</a>.</p>`],
+      ];
+}
+
 export default {
   path: "/support/",
   build(c) {
     const crumbs = breadcrumbs(c, [{ name: c.t("Support", "Destek"), path: "/support/" }]);
     const items = faq(c);
+    const pixelItems = pixelFaq(c);
     const body = `
 <article class="doc">
   <header class="doc-head">
@@ -50,7 +70,7 @@ export default {
         )}</p>
         <p class="contact-addr">${c.email()}</p>
       </div>
-      ${c.mailto(c.t("Crane City support", "Crane City destek"), c.t("Email support", "Destek e-postası gönder"))}
+      ${c.mailto(c.t("Retiverse Games support", "Retiverse Games destek"), c.t("Email support", "Destek e-postası gönder"))}
     </section>
 
     <section class="doc-section" aria-labelledby="faq-title">
@@ -60,11 +80,19 @@ export default {
       </div>
     </section>
 
+    <section class="doc-section" aria-labelledby="pixel-faq-title">
+      <h2 id="pixel-faq-title">${c.t("Pixel Port: frequently asked questions", "Pixel Port: sık sorulan sorular")}</h2>
+      <div class="faq">
+        ${pixelItems.map(([q, a]) => `<details><summary>${q}</summary>${a}</details>`).join("\n        ")}
+      </div>
+    </section>
+
     <section class="doc-section">
       <h2>${c.t("Privacy and your data", "Gizlilik ve verilerin")}</h2>
       <ul class="link-list">
         <li><a href="${c.href("/crane-city/privacy/")}">${c.t("Crane City privacy policy", "Crane City gizlilik politikası")}</a></li>
         <li><a href="${c.href("/crane-city/delete-data/")}">${c.t("Delete your Crane City data", "Crane City verilerini sil")}</a></li>
+        <li><a href="${c.href("/pixel-port/privacy/")}">${c.t("Pixel Port privacy policy", "Pixel Port gizlilik politikası")}</a></li>
         <li><a href="${c.href("/terms/")}">${c.t("Terms of use", "Kullanım koşulları")}</a></li>
       </ul>
     </section>
@@ -72,7 +100,7 @@ export default {
 </article>`;
     const faqData = {
       "@type": "FAQPage",
-      mainEntity: items.map(([q, a]) => ({
+      mainEntity: [...items, ...pixelItems].map(([q, a]) => ({
         "@type": "Question",
         name: q,
         acceptedAnswer: { "@type": "Answer", text: a.replace(/<[^>]+>/g, "").trim() },
@@ -81,8 +109,8 @@ export default {
     return {
       title: c.t("Player support | Retiverse Games", "Oyuncu desteği | Retiverse Games"),
       description: c.t(
-        "Get help with Crane City: Stack & Build and other Retiverse Games titles: contact support, lost progress, purchases, leaderboard names and data deletion.",
-        "Crane City: Stack & Build ve diğer Retiverse Games oyunları için yardım: destek iletişimi, kaybolan ilerleme, satın almalar, sıralama adı ve veri silme.",
+        "Get help with Crane City: Stack & Build, Pixel Port and other Retiverse Games titles: contact support, lost progress, purchases, leaderboard names and data deletion.",
+        "Crane City: Stack & Build, Pixel Port ve diğer Retiverse Games oyunları için yardım: destek iletişimi, kaybolan ilerleme, satın almalar, sıralama adı ve veri silme.",
       ),
       jsonld: [faqData, crumbs.data],
       bodyClass: "page-doc",

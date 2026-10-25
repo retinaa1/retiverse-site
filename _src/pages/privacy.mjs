@@ -1,5 +1,6 @@
 import { breadcrumbs } from "../layout.mjs";
 import { NAME } from "../crane.mjs";
+import { NAME as PIXEL } from "../pixel.mjs";
 import { legalDoc } from "./crane-privacy.mjs";
 
 const UPDATED = { en: "October 25, 2026", tr: "25 Ekim 2026", iso: "2026-10-25" };
@@ -60,6 +61,16 @@ export default {
           </p>
         </div>
       </div>
+      <div class="policy-card">
+        <img class="app-icon" src="/assets/img/pixel-port/icon-256.webp" width="72" height="72" alt="">
+        <div>
+          <h3>${PIXEL}</h3>
+          <p>
+            <a href="/pixel-port/privacy/" hreflang="en" lang="en">Privacy policy (English)</a>
+            <a href="/tr/pixel-port/privacy/" hreflang="tr" lang="tr">Gizlilik politikası (Türkçe)</a>
+          </p>
+        </div>
+      </div>
     </section>
     <h2 class="doc-subtitle">${c.t("This website", "Bu web sitesi")}</h2>
     ${legalDoc(c, c.lang === "tr" ? tr(c) : en(c))}
@@ -68,8 +79,8 @@ export default {
     return {
       title: c.t("Privacy | Retiverse Games", "Gizlilik | Retiverse Games"),
       description: c.t(
-        "Privacy policies for Retiverse Games apps, including Crane City: Stack & Build, and how this website handles your data: no cookies, no tracking.",
-        "Crane City: Stack & Build dahil Retiverse Games oyunlarının gizlilik politikaları ve bu web sitesinin verilerini nasıl ele aldığı: çerez yok, izleme yok.",
+        "Privacy policies for Retiverse Games apps, including Crane City: Stack & Build and Pixel Port, and how this website handles your data: no cookies, no tracking.",
+        "Crane City: Stack & Build ve Pixel Port dahil Retiverse Games oyunlarının gizlilik politikaları ve bu web sitesinin verilerini nasıl ele aldığı: çerez yok, izleme yok.",
       ),
       jsonld: [crumbs.data],
       bodyClass: "page-doc",
