@@ -1,0 +1,5 @@
+# GitHub Pages runs Jekyll on this repository. The site is already built by
+# `node _tools/build.mjs`, so Jekyll only copies the files as they are.
+# Anything starting with "_" (the _src and _tools sources) is never published.
+exclude:
+  - README.md
