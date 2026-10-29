@@ -10,9 +10,13 @@ Retiverse Games stüdyo sitesi. GitHub Pages ile `main` dalının kök klasörü
 | `/crane-city/` · `/tr/crane-city/` | Crane City oyun sayfası |
 | `/crane-city/privacy/` · `/tr/crane-city/privacy/` | **Crane City gizlilik politikası** (Play Console ve oyundaki `ServiceIds.PrivacyPolicyUrl`) |
 | `/crane-city/delete-data/` · `/tr/crane-city/delete-data/` | Veri silme talebi (Play Console > Veri güvenliği) |
+| `/crane-city/terms/` · `/tr/crane-city/terms/` | **Crane City kullanım koşulları** (oyun içinden bu adrese bağlanılır) |
+| `/pixel-port/` · `/tr/pixel-port/` | Pixel Port oyun sayfası |
+| `/pixel-port/privacy/` · `/tr/pixel-port/privacy/` | Pixel Port gizlilik politikası |
+| `/pixel-port/terms/` · `/tr/pixel-port/terms/` | Pixel Port kullanım koşulları |
 | `/privacy/` · `/tr/privacy/` | Stüdyo gizlilik sayfası (oyunların politikaları + bu site) |
 | `/support/` · `/tr/support/` | Oyuncu desteği ve SSS |
-| `/terms/` · `/tr/terms/` | Kullanım koşulları |
+| `/terms/` · `/tr/terms/` | Genel kullanım koşulları (oyunların kendi koşullarına bağlantı verir) |
 | `/404.html` | Bulunamadı sayfası (iki dilli) |
 
 Ayrıca: `sitemap.xml`, `robots.txt`, `site.webmanifest`, `favicon.ico`, `apple-touch-icon.png`, AdMob kimliği girilince `app-ads.txt`.
@@ -59,6 +63,8 @@ python _tools/make_images.py ../BlockBoss
 ## Gizlilik politikası güncellemesi
 
 `_src/pages/crane-privacy.mjs`, oyun deposundaki `Store/PRIVACY_POLICY.md` ile aynı içeriktedir. Oyuna yeni bir servis eklenirse ikisini birlikte güncelle ve `UPDATED` tarihini değiştir.
+
+Oyunların kullanım koşulları (`_src/pages/crane-terms.mjs`, `_src/pages/pixel-terms.mjs`) oyunun özelliklerine göre yazıldı. Bir oyuna satın alma, reklam ya da çevrim içi bir özellik eklenirse (ör. Pixel Port'a) koşulları da güncelle ve `UPDATED` tarihini değiştir.
 
 ## HTTPS ve alan adı
 

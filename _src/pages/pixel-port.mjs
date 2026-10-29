@@ -162,6 +162,7 @@ export default {
       </dl>
       <p class="info-links">
         <a href="${c.href("/pixel-port/privacy/")}">${c.t("Privacy policy", "Gizlilik politikası")}</a>
+        <a href="${c.href("/pixel-port/terms/")}">${c.t("Terms of use", "Kullanım koşulları")}</a>
         <a href="${c.href("/support/")}">${c.t("Support", "Destek")}</a>
       </p>
     </div>

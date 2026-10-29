@@ -108,6 +108,8 @@ function footer(c) {
         ${link("/crane-city/privacy/", "Crane City privacy policy", "Crane City gizlilik politikası")}
         ${link("/pixel-port/privacy/", "Pixel Port privacy policy", "Pixel Port gizlilik politikası")}
         ${link("/terms/", "Terms of use", "Kullanım koşulları")}
+        ${link("/crane-city/terms/", "Crane City terms of use", "Crane City kullanım koşulları")}
+        ${link("/pixel-port/terms/", "Pixel Port terms of use", "Pixel Port kullanım koşulları")}
       </div>
     </nav>
   </div>

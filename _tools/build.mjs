@@ -14,15 +14,17 @@ import home from "../_src/pages/home.mjs";
 import craneCity from "../_src/pages/crane-city.mjs";
 import cranePrivacy from "../_src/pages/crane-privacy.mjs";
 import craneDelete from "../_src/pages/crane-delete.mjs";
+import craneTerms from "../_src/pages/crane-terms.mjs";
 import pixelPort from "../_src/pages/pixel-port.mjs";
 import pixelPrivacy from "../_src/pages/pixel-privacy.mjs";
+import pixelTerms from "../_src/pages/pixel-terms.mjs";
 import privacy from "../_src/pages/privacy.mjs";
 import support from "../_src/pages/support.mjs";
 import terms from "../_src/pages/terms.mjs";
 import notFound from "../_src/pages/not-found.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PAGES = [home, craneCity, cranePrivacy, craneDelete, pixelPort, pixelPrivacy, privacy, support, terms, notFound];
+const PAGES = [home, craneCity, cranePrivacy, craneDelete, craneTerms, pixelPort, pixelPrivacy, pixelTerms, privacy, support, terms, notFound];
 const ASSETS = ["/assets/css/site.css", "/assets/js/site.js"];
 const today = new Date().toISOString().slice(0, 10);
 

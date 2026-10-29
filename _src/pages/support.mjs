@@ -91,8 +91,10 @@ export default {
       <h2>${c.t("Privacy and your data", "Gizlilik ve verilerin")}</h2>
       <ul class="link-list">
         <li><a href="${c.href("/crane-city/privacy/")}">${c.t("Crane City privacy policy", "Crane City gizlilik politikası")}</a></li>
+        <li><a href="${c.href("/crane-city/terms/")}">${c.t("Crane City terms of use", "Crane City kullanım koşulları")}</a></li>
         <li><a href="${c.href("/crane-city/delete-data/")}">${c.t("Delete your Crane City data", "Crane City verilerini sil")}</a></li>
         <li><a href="${c.href("/pixel-port/privacy/")}">${c.t("Pixel Port privacy policy", "Pixel Port gizlilik politikası")}</a></li>
+        <li><a href="${c.href("/pixel-port/terms/")}">${c.t("Pixel Port terms of use", "Pixel Port kullanım koşulları")}</a></li>
         <li><a href="${c.href("/terms/")}">${c.t("Terms of use", "Kullanım koşulları")}</a></li>
       </ul>
     </section>

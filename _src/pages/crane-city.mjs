@@ -185,6 +185,7 @@ export default {
       </dl>
       <p class="info-links">
         <a href="${c.href("/crane-city/privacy/")}">${c.t("Privacy policy", "Gizlilik politikası")}</a>
+        <a href="${c.href("/crane-city/terms/")}">${c.t("Terms of use", "Kullanım koşulları")}</a>
         <a href="${c.href("/crane-city/delete-data/")}">${c.t("Delete my data", "Verilerimi sil")}</a>
         <a href="${c.href("/support/")}">${c.t("Support", "Destek")}</a>
       </p>

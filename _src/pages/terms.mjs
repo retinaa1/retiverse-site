@@ -1,4 +1,6 @@
 import { breadcrumbs } from "../layout.mjs";
+import { NAME } from "../crane.mjs";
+import { NAME as PIXEL } from "../pixel.mjs";
 import { legalDoc } from "./crane-privacy.mjs";
 
 const UPDATED = { en: "October 25, 2026", tr: "25 Ekim 2026", iso: "2026-10-25" };
@@ -58,6 +60,30 @@ export default {
     </div>
   </header>
   <div class="wrap narrow">
+    <section class="policy-list" aria-labelledby="games-terms">
+      <h2 id="games-terms">${c.t("Game terms of use", "Oyunların kullanım koşulları")}</h2>
+      <div class="policy-card">
+        <img class="app-icon" src="/assets/img/crane-city/icon-256.webp" width="72" height="72" alt="">
+        <div>
+          <h3>${NAME}</h3>
+          <p>
+            <a href="/crane-city/terms/" hreflang="en" lang="en">Terms of use (English)</a>
+            <a href="/tr/crane-city/terms/" hreflang="tr" lang="tr">Kullanım koşulları (Türkçe)</a>
+          </p>
+        </div>
+      </div>
+      <div class="policy-card">
+        <img class="app-icon" src="/assets/img/pixel-port/icon-256.webp" width="72" height="72" alt="">
+        <div>
+          <h3>${PIXEL}</h3>
+          <p>
+            <a href="/pixel-port/terms/" hreflang="en" lang="en">Terms of use (English)</a>
+            <a href="/tr/pixel-port/terms/" hreflang="tr" lang="tr">Kullanım koşulları (Türkçe)</a>
+          </p>
+        </div>
+      </div>
+    </section>
+    <h2 class="doc-subtitle">${c.t("General terms", "Genel koşullar")}</h2>
     ${legalDoc(c, c.lang === "tr" ? tr(c) : en(c))}
   </div>
 </article>`;
