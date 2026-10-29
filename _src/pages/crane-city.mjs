@@ -9,7 +9,7 @@ const COPY = {
       "In Crane City the crane swings and the block hangs in the air… Tap at just the right moment, land a perfect drop and raise your tower into the clouds! Every perfect drop grows your combo, and a chain of perfect drops kicks off a FEVER streak that multiplies your population!",
     ],
     features: [
-      ["🌍", "Build the world's most famous cities", "From New York to Istanbul, from Paris to Tokyo and on to Rome… Build your own city across 250 levels in the shadow of the Statue of Liberty, Galata Tower, the Eiffel Tower, Tokyo Tower and the Colosseum. Every level you beat adds a new building to your map!"],
+      ["🌍", "Build the world's most famous cities", "From New York to Istanbul, from Paris to Tokyo and on to Roma… Build your own city across 250 levels in the shadow of the Statue of Liberty, Galata Tower, the Eiffel Tower, Tokyo Tower and the Colosseum. Every level you beat adds a new building to your map!"],
       ["⚡", "A new twist in every city", ["Iron blocks drop fast, glass blocks only survive a perfect landing", "The rope stretches and shrinks, the turbo crane suddenly speeds up", "Wind pushes your block, snow makes it slippery, fog hides the top of your tower"], "Easy to start, built for masters!"],
       ["🎯", "Chain combos, collect stars", "Line up perfect drops to multiply your population and chase 3 stars on every level. Stars unlock new districts and cities."],
       ["🧲", "Power-ups", "When things get tough, the slow-motion hourglass, the heavy anchor and the centering magnet come to the rescue!"],
@@ -198,7 +198,7 @@ ${tester}`;
       title: c.t(`${NAME}, a block-stacking city game`, `${NAME}, blok dizme ve şehir kurma oyunu`),
       ogTitle: NAME,
       description: c.t(
-        `${SHORT.en} 250 levels in New York, Istanbul, Paris, Tokyo and Rome. ${live ? "Free on Google Play." : "Coming soon to Google Play."}`,
+        `${SHORT.en} 250 levels in New York, Istanbul, Paris, Tokyo and Roma. ${live ? "Free on Google Play." : "Coming soon to Google Play."}`,
         `${SHORT.tr} New York, İstanbul, Paris, Tokyo ve Roma'da 250 seviye. ${live ? "Google Play'de ücretsiz." : "Çok yakında Google Play'de."}`,
       ),
       image: { url: `/assets/img/crane-city/og-${c.lang}.jpg`, width: 1200, height: 630, alt: NAME },

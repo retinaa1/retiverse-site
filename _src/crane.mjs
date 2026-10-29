@@ -25,7 +25,7 @@ export const CITIES = [
   { name: { en: "Istanbul", tr: "İstanbul" }, landmark: { en: "Galata Tower", tr: "Galata Kulesi" }, tone: "ist" },
   { name: { en: "Paris", tr: "Paris" }, landmark: { en: "Eiffel Tower", tr: "Eyfel Kulesi" }, tone: "par" },
   { name: { en: "Tokyo", tr: "Tokyo" }, landmark: { en: "Tokyo Tower", tr: "Tokyo Kulesi" }, tone: "tok" },
-  { name: { en: "Rome", tr: "Roma" }, landmark: { en: "Colosseum", tr: "Kolezyum" }, tone: "rom" },
+  { name: { en: "Roma", tr: "Roma" }, landmark: { en: "Colosseum", tr: "Kolezyum" }, tone: "rom" },
 ];
 
 export function playUrl(c) {
