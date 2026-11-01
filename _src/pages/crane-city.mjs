@@ -180,7 +180,7 @@ export default {
         <div><dt>${c.t("Price", "Fiyat")}</dt><dd>${c.t("Free to play, optional coin packs", "Ücretsiz; isteğe bağlı altın paketleri")}</dd></div>
         <div><dt>${c.t("Ads", "Reklamlar")}</dt><dd>${c.t("Rewarded ads only, you choose when to watch", "Yalnızca ödüllü reklam; ne zaman izleyeceğine sen karar verirsin")}</dd></div>
         <div><dt>${c.t("Languages", "Diller")}</dt><dd>English, Türkçe, Deutsch, Español, Français, Português, Italiano</dd></div>
-        <div><dt>${c.t("Account", "Hesap")}</dt><dd>${c.t("No sign-up needed", "Hesap açmak gerekmez")}</dd></div>
+        <div><dt>${c.t("Account", "Hesap")}</dt><dd>${c.t("No sign-up needed; progress is saved with Google Play Games", "Hesap açmak gerekmez; ilerleme Google Play Games ile saklanır")}</dd></div>
         <div><dt>${c.t("Status", "Durum")}</dt><dd>${live ? `<a href="${playUrl(c)}" rel="noopener">${c.t("Available on Google Play", "Google Play'de")}</a>` : c.t("Coming soon to Google Play", "Çok yakında Google Play'de")}</dd></div>
       </dl>
       <p class="info-links">

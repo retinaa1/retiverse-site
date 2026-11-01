@@ -1,0 +1,2 @@
+# Authorized ad sellers for apps by Retiverse Games (https://iabtechlab.com/ads-txt/)
+google.com, pub-5979591588927888, DIRECT, f08c47fec0942fa0

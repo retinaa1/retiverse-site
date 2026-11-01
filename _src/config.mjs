@@ -27,5 +27,5 @@ export default {
 
   // AdMob yayıncı kimliği, ör. "pub-1234567890123456". Boşken app-ads.txt yayınlanmaz.
   // (Kimliksiz bir app-ads.txt reklamları engelleyebilir; bu yüzden sahte satır koymuyoruz.)
-  admobPublisherId: "",
+  admobPublisherId: "pub-5979591588927888",
 };

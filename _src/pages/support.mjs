@@ -6,7 +6,7 @@ function faq(c) {
   const del = c.href("/crane-city/delete-data/");
   return c.lang === "tr"
     ? [
-        ["Oyunu yeniden yükledim, ilerlemem gitti.", `<p>Crane City ilerlemeni (seviyeler, altınlar, yıldızlar, ayarlar) yalnızca cihazında saklar. Oyunu kaldırmak ya da verilerini temizlemek bunları siler; şu an bulut kaydı olmadığı için geri getiremiyoruz.</p>`],
+        ["Oyunu yeniden yükledim, ilerlemem gitti.", `<p>Crane City ilerlemeni (seviyeler, altınlar, yıldızlar, ayarlar) internete bağlıyken bulut kaydına da yazar. Oyunu açınca Google Play Games'e aynı hesapla girdiğinden emin ol; ilerlemen ana ekranda kendiliğinden geri gelir. Play Games olmadan (anonim) oynadıysan ilerleme yalnızca o telefondaydı ve geri getirilemez. Yine de bulamıyorsan Ayarlar'ın en altındaki oyuncu kimliğinle bize yaz.</p>`],
         ["Altın satın aldım ama hesabıma gelmedi.", `<p>İnternete bağlı olduğundan emin ol, birkaç dakika bekle ve oyunu yeniden aç. Altınlar hâlâ görünmüyorsa Google Play sipariş numaranla (GPA. ile başlar, Google'ın gönderdiği makbuz e-postasında yazar) bize yaz. İadeleri Google Play yönetir: <a href="${REFUNDS}?hl=tr" rel="noopener">Google Play'de iade alma</a>.</p>`],
         ["Sıralamadaki adımı nasıl değiştiririm?", `<p>Oyunda Ayarlar'ı aç ve oyuncu adını düzenle. Gerçek adını ya da kişisel bilgilerini oyuncu adı olarak kullanmamanı öneririz.</p>`],
         ["Reklam ve veri tercihlerimi nasıl değiştiririm?", `<p>Avrupa Ekonomik Alanı, Birleşik Krallık ve İsviçre'de oyundaki <strong>Ayarlar &gt; Gizlilik seçenekleri</strong> bölümünü kullan. Her yerde reklam kimliğini cihaz ayarlarından (Google &gt; Reklamlar) sıfırlayabilir ya da silebilirsin.</p>`],
@@ -14,7 +14,7 @@ function faq(c) {
         ["Verilerimi nasıl sildiririm?", `<p>Adım adım anlatım için: <a href="${del}">Crane City verilerini sil</a>.</p>`],
       ]
     : [
-        ["I reinstalled the game and lost my progress.", `<p>Crane City saves your progress (levels, coins, stars, settings) only on your device. Uninstalling the game or clearing its data deletes it, and because there is no cloud save at the moment, we can't restore it.</p>`],
+        ["I reinstalled the game and lost my progress.", `<p>Crane City also saves your progress (levels, coins, stars, settings) to your cloud save when it is online. Make sure you are signed in to Google Play Games with the same account when you open the game; your progress comes back on the home screen by itself. If you played without Play Games (anonymously), the progress was only on that phone and can't be restored. If you still can't find it, email us with the player ID at the bottom of Settings.</p>`],
         ["I bought coins but didn't receive them.", `<p>Make sure you're online, wait a few minutes and reopen the game. If the coins still don't appear, email us with your Google Play order number (it starts with GPA. and is in Google's receipt email). Refunds are handled by Google Play: <a href="${REFUNDS}" rel="noopener">Get refunds on Google Play purchases</a>.</p>`],
         ["How do I change my name on the leaderboard?", `<p>Open Settings in the game and edit your player name. We recommend not using your real name or other personal details.</p>`],
         ["How do I change my ad and data choices?", `<p>In the European Economic Area, the UK and Switzerland, use <strong>Settings &gt; Privacy options</strong> in the game. Anywhere, you can reset or delete your advertising ID in your device settings (Google &gt; Ads).</p>`],
