@@ -44,7 +44,7 @@ export default {
         <li>Your <strong>team membership</strong>. If you were the last member, the team is deleted; if you led the team, the longest-standing member becomes its leader.</li>
         <li>The <strong>name reports</strong> you have sent.</li>
       </ul>
-      <p><strong>Gameplay statistics</strong> (GameAnalytics) are stored under a separate random ID that is not linked to your player name or player ID, so they cannot be found and deleted one by one. They are deleted automatically when GameAnalytics' retention period ends. We may keep anonymous, aggregated numbers (for example, how many players finished level 10) that can no longer be linked to you.</p>
+      <p><strong>Gameplay statistics</strong> (GameAnalytics) are stored under a separate random ID, not under your player name or player ID. A copy of that ID is kept in your cloud save; when we delete your data, we also ask GameAnalytics to delete the statistics stored under it. If no such ID can be found, those statistics cannot be matched to you; GameAnalytics deletes them automatically within 12 months. We may keep anonymous, aggregated numbers (for example, how many players finished level 10) that can no longer be linked to you.</p>
     </section>
     <section class="doc-section">
       <h2>Data on your device</h2>
@@ -95,7 +95,7 @@ export default {
         <li><strong>Takım üyeliğin.</strong> Takımın son üyesiysen takım silinir; liderse takımda en uzun süredir bulunan üye lider olur.</li>
         <li>Gönderdiğin <strong>ad bildirimleri</strong>.</li>
       </ul>
-      <p><strong>Oyun istatistikleri</strong> (GameAnalytics), oyuncu adınla ya da oyuncu kimliğinle eşleşmeyen ayrı, rastgele bir kimlikle tutulur; bu yüzden tek tek bulunup silinemez. GameAnalytics'in saklama süresi dolunca kendiliğinden silinir. Artık seninle ilişkilendirilemeyen anonim, toplu sayıları (ör. 10. seviyeyi kaç oyuncunun bitirdiği) saklayabiliriz.</p>
+      <p><strong>Oyun istatistikleri</strong> (GameAnalytics), oyuncu adınla ya da oyuncu kimliğinle değil, ayrı ve rastgele bir kimlikle tutulur. Bu kimliğin bir kopyası bulut kaydında saklanır; verilerini sildiğimizde bu kimlikle tutulan istatistiklerin silinmesini GameAnalytics'ten de isteriz. Böyle bir kimlik bulunamazsa bu istatistikler seninle eşleştirilemez; GameAnalytics onları en geç 12 ay içinde kendiliğinden siler. Artık seninle ilişkilendirilemeyen anonim, toplu sayıları (ör. 10. seviyeyi kaç oyuncunun bitirdiği) saklayabiliriz.</p>
     </section>
     <section class="doc-section">
       <h2>Cihazındaki veriler</h2>
