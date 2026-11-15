@@ -104,7 +104,7 @@ ${urls.join("\n")}
   ),
 );
 
-written.push(write("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${cfg.baseUrl}/sitemap.xml\n`));
+written.push(write("robots.txt", `User-agent: *\nAllow: /\nDisallow: /crane-city/playable/\n\nSitemap: ${cfg.baseUrl}/sitemap.xml\n`));
 
 written.push(
   write(
