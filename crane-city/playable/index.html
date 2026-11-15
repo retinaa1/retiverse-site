@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="ad.orientation" content="portrait">
+<title>Crane City</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex, nofollow">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#3D8BFF;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function () {
+  "use strict";
+  // Crane City oynanabilir reklam: oyunun 1. seviyesi, değerler oyunun kodundan
+  // (CraneController, BlockController, TowerManager, CameraRig, ComboManager, GameManager, SkyBackground).
+  var STORE = "https://play.google.com/store/apps/details?id=com.retiversegames.cranecity";
+  // dil: telefonun diline göre; metinler oyunun Localization.cs çevirilerinden (tr, en, de, es, fr, pt, it)
+  var LANGS = ["tr", "en", "de", "es", "fr", "pt", "it"];
+  var forced = (/[?&]lang=([a-z]{2})/.exec(location.search) || [])[1];   // yalnız deneme için
+  var li = LANGS.indexOf(forced || (navigator.language || "en").toLowerCase().slice(0, 2));
+  if (li < 0) li = 1;   // desteklenmeyen dil: İngilizce
+  function T(a) { return a[li] || a[1]; }
+  var L = {
+    level: T(["Seviye 1", "Level 1", "Level 1", "Nivel 1", "Niveau 1", "Nível 1", "Livello 1"]),
+    hint: T(["Blok tam üstteyken dokun!", "Tap when the block is right above!", "Tippe, wenn der Block genau darüber ist!", "¡Toca cuando el bloque esté justo encima!", "Touche quand le bloc est juste au-dessus !", "Toque quando o bloco estiver bem em cima!", "Tocca quando il blocco è proprio sopra!"]),
+    perfect: T(["Mükemmel!", "Perfect!", "Perfekt!", "¡Perfecto!", "Parfait !", "Perfeito!", "Perfetto!"]),
+    great: T(["Harika!", "Great!", "Super!", "¡Genial!", "Super !", "Ótimo!", "Ottimo!"]),
+    amazing: T(["Muhteşem!", "Amazing!", "Fantastisch!", "¡Increíble!", "Incroyable !", "Incrível!", "Fantastico!"]),
+    legendary: T(["Efsane!", "Legendary!", "Legendär!", "¡Legendario!", "Légendaire !", "Lendário!", "Leggendario!"]),
+    combo: T(["Kombo x", "Combo x", "Kombo x", "Combo x", "Combo x", "Combo x", "Combo x"]),
+    missed: T(["Kaçtı!", "Missed!", "Daneben!", "¡Fallaste!", "Raté !", "Errou!", "Mancato!"]),
+    tipped: T(["Kaydı!", "Slipped!", "Abgerutscht!", "¡Resbaló!", "Glissé !", "Escorregou!", "Scivolato!"]),
+    collapsed: T(["Yıkıldı!", "Collapsed!", "Eingestürzt!", "¡Se cayó!", "Effondré !", "Desabou!", "Crollata!"]),
+    careful: T(["Dikkat!", "Careful!", "Vorsicht!", "¡Cuidado!", "Attention !", "Cuidado!", "Attenzione!"]),
+    last: T(["Son kat!", "Final floor!", "Letzte Etage!", "¡Último piso!", "Dernier étage !", "Último andar!", "Ultimo piano!"]),
+    goal: T(["HEDEF TAMAM!", "GOAL!", "ZIEL!", "¡META!", "OBJECTIF !", "META!", "OBIETTIVO!"]),
+    fever: T(["Süper Seri!", "FEVER!"]),
+    max: "MAX",
+    tag: T(["Kuleni yükselt, şehrini kur!", "Stack the tower, build your city!", "Stapel den Turm, bau deine Stadt!", "¡Apila la torre, construye tu ciudad!", "Empile la tour, bâtis ta ville !", "Empilhe a torre, construa sua cidade!", "Impila la torre, costruisci la tua città!"]),
+    play: T(["ŞİMDİ OYNA", "PLAY NOW", "JETZT SPIELEN", "JUEGA YA", "JOUER", "JOGAR AGORA", "GIOCA ORA"]),
+    again: T(["Gökdelenini inşa et!", "Build your skyscraper!", "Bau deinen Wolkenkratzer!", "¡Construye tu rascacielos!", "Construis ton gratte-ciel !", "Construa seu arranha-céu!", "Costruisci il tuo grattacielo!"])
+  };
+  document.documentElement.lang = LANGS[li];
+
+  // ---- oyunun değerleri ----
+  var BW = 2.5, BH = 1.55, FOUND = 3.2;
+  var GRAV = 9.81 * 7.1;
+  var BLOCKS = 12, STARS = [90, 120, 130];   // reklam için 12 kat (yıldızlar oyunun formülüyle, 12 blok)
+  var SPEED0 = 1.85, GROWTH = 1.01, SPEED_MAX = 4.3;
+  var ASSIST = true;   // build.py iki sürüm çıkarır: yardımlı (true) ve oyundaki gibi yardımsız (false)
+  var PERFECT = ASSIST ? 0.18 : 0.15, SLING = 0.38;   // oyunda 0.15
+  var NUDGE_RANGE = ASSIST ? 0.7 : 0, NUDGE_RATE = 1.1;   // yardım: yakın bırakılan blok düşerken ~%35 kuleye kayar
+  var W_IMP = 2.6, W_K = 42, W_D = 1.0, SWAY_PER = 0.012, SWAY_MAX = 0.45, DANGER = 0.6;
+  var FEVER_MULT = 4, FEVER_DROPS = 3, MAX_TIME = 60;
+  var INK = "#26135C", NAVY = "#1F2A63", SUBNAVY = "#5A6A9E";
+  var SKY = [[0, "#3D8BFF", "#AEE8FF"], [14, "#6B4BD8", "#FFA07C"], [27, "#111F5C", "#4D3BA0"]];
+
+  var cv = document.getElementById("c"), ctx = cv.getContext("2d");
+  var cw = 0, ch = 0, dpr = 1, halfH = 9.25, halfW = 5.2, hh = 18.5, ppu = 40, ui = 1;
+
+  var names = ["block", "roof", "glow", "jib", "trolley", "rope", "hook", "sling", "foundation", "ground", "sky_back", "sky_front", "sky_win", "cloud",
+    "ring", "spark", "dot", "star", "star_off", "pop", "row", "counter", "track", "green", "pill_pink", "pill_gold", "bar_bg", "bar_fill", "icon", "btn"];
+  var img = {}, tintCache = {};
+
+  function load() {
+    var n = names.length;
+    names.forEach(function (k) {
+      var i = new Image();
+      i.onload = i.onerror = function () { if (--n === 0) start(); };
+      i.src = "img/" + k + ".png";
+      img[k] = i;
+    });
+  }
+
+  function tinted(key, color) {
+    var id = key + color;
+    if (tintCache[id]) return tintCache[id];
+    var src = img[key], c = document.createElement("canvas");
+    c.width = src.width; c.height = src.height;
+    var x = c.getContext("2d");
+    x.drawImage(src, 0, 0);
+    x.globalCompositeOperation = "source-in";
+    x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+    return (tintCache[id] = c);
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = window.innerWidth, h = window.innerHeight;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    cw = cv.width; ch = cv.height;
+    var aspect = cw / ch;
+    halfH = Math.max(16.5 / 2, 10.4 / 2 / aspect);   // CameraRig
+    hh = halfH * 2; halfW = halfH * aspect;
+    ppu = ch / hh;
+    ui = Math.min(cw / 1080, ch / 1920 * 1.15);       // arayüz 1080 genişliğe göre
+  }
+
+  // ---- durum ----
+  var now = 0, last = 0, time = 0;
+  var tower = [];
+  var held = null, fall = null, debris = [], fx = [], texts = [], clouds = [];
+  var craneT = Math.random() * Math.PI * 2, ropeK = 0.3, spawnT = 1, waitT = 0.35;
+  var blocksLeft = BLOCKS, population = 0, popShown = 0, combo = 0, missStreak = 0, comboTimer = 0, comboWindow = 5.6, perfectRow = 0;
+  var fever = 0, feverAlpha = 0, comboFeverUsed = false;
+  var wobble = 0, wobbleVel = 0, swayAmp = 0, swayPhase = 0, stability = 0, leanVis = 0, leanDir = 0, sway = 0;
+  var camX = 0, camY = 0, camY0 = 0, trauma = 0, shakeX = 0, shakeY = 0, shakeR = 0;
+  var phase = "play", phaseT = 0, endT = 0, carefulShown = false, collapsed = false, starsOn = [0, 0, 0], starPop = [0, 0, 0];
+
+  function start() {
+    resize();
+    camY = camY0 = (0.5 - 0.2) * hh;
+    for (var i = 0; i < 9; i++) clouds.push({ x: Math.random(), y: 4 + Math.random() * 40, v: 0.004 + Math.random() * 0.008, s: 0.55 + Math.random() * 0.6 });
+    window.addEventListener("resize", resize);
+    cv.addEventListener("pointerdown", onTap);
+    last = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  function speed() { return Math.min(SPEED_MAX, SPEED0 * Math.pow(GROWTH, tower.length)); }
+  function amplitude() { return Math.min(halfW - BW / 2 - 0.25, 2.3 + tower.length * 0.035); }
+  function jibY() { return halfH - Math.max(hh * 0.22, 1.3); }
+  function easeOutBack(t) { var c1 = 1.9, c3 = 2.9; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  // vinç: kameraya göre konumlar (CraneController); blok merkezi dünya koordinatında
+  function crane() {
+    var A = amplitude(), s = speed();
+    var x = Math.sin(craneT) * A;
+    var k = Math.min(0.11, s * s * A * 0.007);
+    var ang = Math.sin(craneT) * k;
+    var jy = jibY();
+    var ropeLen = hh * 0.1 * ropeK;
+    var px = x, py = jy - 0.1;
+    var hx = px + Math.sin(ang) * ropeLen, hy = py - Math.cos(ang) * ropeLen;
+    var off = SLING + BH / 2 + (held && held.roof ? 0.72 : 0);
+    var bx = hx + Math.sin(ang) * off, by = hy - Math.cos(ang) * off;
+    return { x: x, jy: jy, px: px, py: py, hx: hx, hy: hy, ang: ang, ropeLen: ropeLen, bx: bx + camX, by: by + camY };
+  }
+
+  function onTap(e) {
+    e.preventDefault();
+    if (phase === "end") { if ((now - endT) / 1000 > 0.4) install(); return; }
+    if (phase !== "play" || !held || spawnT < 1 || fall) return;
+    var c = crane();
+    fall = { x: c.bx, y: c.by, vy: 0, ang: -c.ang, roof: held.roof };
+    held = null;
+    blocksLeft--;
+  }
+
+  function install() {
+    try { if (window.ExitApi && ExitApi.exit) { ExitApi.exit(); return; } } catch (err) {}
+    window.open(STORE, "_blank");
+  }
+
+  // ---- kule (TowerManager) ----
+  function topBaseX() { return tower.length ? tower[tower.length - 1].baseX : 0; }
+  function topSurface() {
+    if (!tower.length) return { x: 0, y: 0, half: FOUND / 2 };
+    var t = tower[tower.length - 1];
+    return { x: t.x, y: t.topY, half: BW / 2 };
+  }
+
+  function recalcStability() {
+    stability = 0; leanDir = 0;
+    var n = tower.length;
+    for (var k = n - 1; k >= 0; k--) {
+      var sum = 0;
+      for (var i = k; i < n; i++) sum += tower[i].baseX;
+      var com = sum / (n - k);
+      var sup = k > 0 ? tower[k - 1].baseX : 0, half = k > 0 ? BW / 2 : FOUND / 2;
+      var q = Math.abs(com - sup) / half;
+      if (q > stability) { stability = q; leanDir = com > sup ? 1 : -1; }
+    }
+  }
+
+  // kusursuz atış: katlar arası kaymalar oranında azalır (TowerManager.Straighten)
+  function straighten(amount) {
+    var keep = 1 - amount, prevOld = 0, prevNew = 0;
+    for (var i = 0; i < tower.length; i++) {
+      var rel = tower[i].baseX - prevOld;
+      prevOld = tower[i].baseX;
+      tower[i].baseX = prevNew + rel * keep;
+      prevNew = tower[i].baseX;
+    }
+  }
+
+  function layout(dt) {
+    var n = tower.length;
+    if (!n) return;
+    var height = n * BH;
+    var lean = leanDir * Math.max(0, leanVis - 0.2) * 1.1;
+    var px = tower[0].shownX, py = 0;
+    for (var i = 0; i < n; i++) {
+      var b = tower[i];
+      if (dt) b.shownX = lerp(b.shownX, b.baseX, 1 - Math.exp(-5 * dt));
+      if (i > 0) {
+        var p = tower[i - 1], d = b.shownX - p.shownX;
+        px = p.topX + Math.cos(p.ang) * d; py = p.topY - Math.sin(p.ang) * d;
+      } else px = b.shownX;
+      var yc = i * BH + BH / 2, k = yc / height;
+      var slope = sway * 1.5 * Math.sqrt(k) / height + lean / Math.max(height, 6);
+      var a = Math.atan(slope);
+      b.ang = a;
+      b.botX = px; b.botY = py;
+      b.x = px + Math.sin(a) * BH / 2; b.y = py + Math.cos(a) * BH / 2;
+      b.topX = px + Math.sin(a) * BH; b.topY = py + Math.cos(a) * BH;
+    }
+  }
+
+  function addText(s, x, y, size, top, bot, life, delay, rot) {
+    texts.push({ s: s, x: x, y: y, size: size, top: top, bot: bot, life: life || 1.1, t: -(delay || 0), rot: rot || 0 });
+  }
+
+  function sparks(x, y, n) {
+    var cols = ["#2EF2FF", "#FF4FB0", "#FFE36B", "#FFFFFF"];
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 6;
+      fx.push({ k: "spark", x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v + 2, g: 14, t: 0, life: 0.5 + Math.random() * 0.4, s: 0.2 + Math.random() * 0.2, c: cols[i % 4] });
+    }
+  }
+  function dust(x, y) {
+    for (var i = 0; i < 8; i++) {
+      var side = i % 2 ? 1 : -1;
+      fx.push({ k: "dust", x: x + side * (0.6 + Math.random() * 0.65), y: y, vx: side * (1 + Math.random() * 2), vy: Math.random() * 1.2, drag: 3, t: 0, life: 0.4 + Math.random() * 0.3, s: 0.35 + Math.random() * 0.3 });
+    }
+  }
+  function confetti(x, y, n, rain) {
+    var cols = ["#FF4FB0", "#FFD34E", "#2EF2FF", "#7EE36B", "#B98BFF", "#FF8A3D"];
+    for (var i = 0; i < n; i++) {
+      if (rain) fx.push({ k: "conf", x: camX + (Math.random() - 0.5) * halfW * 2.2, y: camY + halfH + Math.random() * 4, vx: (Math.random() - 0.5) * 2, vy: -2 - Math.random() * 3, g: 2, t: 0, life: 3.5, s: 0.18 + Math.random() * 0.12, r: Math.random() * 6, vr: (Math.random() - 0.5) * 12, c: cols[i % 6] });
+      else { var a = Math.random() * Math.PI, v = 4 + Math.random() * 8; fx.push({ k: "conf", x: x, y: y, vx: Math.cos(a) * v * 0.8, vy: Math.sin(a) * v + 3, g: 9, t: 0, life: 2.2, s: 0.16 + Math.random() * 0.12, r: Math.random() * 6, vr: (Math.random() - 0.5) * 14, c: cols[i % 6] }); }
+    }
+  }
+  function rings(x, y) {
+    fx.push({ k: "ring", x: x, y: y, t: 0, life: 0.6, c: "#2EF2FF" });
+    fx.push({ k: "ring", x: x, y: y, t: -0.1, life: 0.6, c: "#FF4FB0" });
+  }
+  function shake(a) { trauma = Math.min(1, trauma + a); }
+
+  function land(dx, assisted) {
+    var perfect = assisted || Math.abs(dx) < PERFECT;
+    if (perfect) dx = 0;
+    var b = { baseX: topBaseX() + dx, squash: 0, squashVel: -0.3 * 6, roof: fall.roof };
+    b.shownX = b.baseX;
+    if (tower.length) tower[tower.length - 1].squashVel -= 0.1 * 6;
+    tower.push(b);
+    fall = null;
+    // TowerManager.PlaceBlock
+    if (!perfect && fever === 0) {
+      var far = 1 + Math.abs(dx) / (BW * 0.5) * 0.6;
+      wobbleVel += dx * W_IMP * far * (1 + stability * 0.5);
+    }
+    if (perfect && tower.length > 1) {
+      straighten(0.3);
+      wobble *= 0.5; wobbleVel *= 0.35;
+    }
+    recalcStability();
+    layout(0);
+    var top = tower[tower.length - 1];
+    if (perfect) { combo++; missStreak = 0; perfectRow++; comboTimer = comboWindow; }
+    else { perfectRow = 0; if (combo > 0) { missStreak++; if (missStreak >= 2) { combo = 0; missStreak = 0; } } }
+    var mult = combo > 0 ? 1 + combo : 1, gain = 10 * mult;
+    population += gain;
+    var ty = top.topY;
+    if (perfect) {
+      var c = combo, s = c >= 8 ? L.legendary : c >= 5 ? L.amazing : c >= 3 ? L.great : L.perfect;
+      addText(s, top.x, ty + BH * 1.7, 1.05, "#FFF6B0", "#FF9E1C", 1.1, 0, (Math.random() - 0.5) * 0.1);
+      if (mult >= 2) addText(L.combo + mult, top.x, ty + BH * 1.7 - 1.05, 0.6, "#FFFFFF", "#9EF2FF", 1.1, 0.08, 0);
+      addText("+" + gain, top.x + (Math.random() < 0.5 ? -1.8 : 1.8), ty + BH * 1.2, 0.62, "#FFFFFF", "#FFF0C8", 1.0, 0.05, 0);
+      rings(top.x, ty);
+      sparks(top.x, ty + BH / 2, 22);
+      shake(0.38);
+    } else {
+      addText("+" + gain, top.x + (dx > 0 ? -1.7 : 1.7), ty + BH * 0.9, 0.62, "#FFFFFF", "#FFF0C8", 1.0, 0, 0);
+      shake(0.14);
+    }
+    dust(top.botX, top.botY);
+    if (fever > 0) { confetti(top.x, ty, 60); sparks(top.x, ty, 8); fever--; if (!fever) perfectRow = 0; }
+    // reklama özel: Süper Seri x4 komboda açılır (oyunda arka arkaya 3 Mükemmel); bir kombo zincirinde bir kez
+    else if (combo + 1 >= FEVER_MULT && !comboFeverUsed) { fever = FEVER_DROPS; comboFeverUsed = true; perfectRow = 0; wobbleVel *= 0.2; confetti(top.x, ty, 70); }
+    comboWindow = 2 * (1.15 + Math.PI / Math.max(0.5, speed()));
+    if (stability > 1.0) { collapse(); return; }
+    if (stability > 0.75 && !carefulShown) { carefulShown = true; addText(L.careful, camX, camY + halfH * 0.15, 0.9, "#FFFFFF", "#FF7A8A", 1.2, 0.2, 0); }
+    afterBlock(0.3);
+  }
+
+  function missed(text) {
+    addText(text, camX, camY + halfH * 0.1, 0.95, "#FFFFFF", "#FFB0BC", 1.1, 0, 0);
+    combo = 0; missStreak = 0; perfectRow = 0; fever = 0;
+    shake(0.32);
+    afterBlock(0.6);
+  }
+
+  function afterBlock(wait) {
+    if (blocksLeft <= 0) { phase = "finish"; phaseT = now; return; }
+    waitT = wait;
+  }
+
+  function collapse() {
+    collapsed = true;
+    var n = tower.length;
+    var d = leanDir || (Math.random() < 0.5 ? -1 : 1);
+    tower.forEach(function (b, i) {
+      var f = (i + 1) / n;
+      debris.push({ x: b.x, y: b.y, vx: d * (0.4 + f * 5) * (0.6 + Math.random() * 0.6), vy: Math.random() * 3, ang: b.ang, va: d * (0.6 + Math.random() * 2.9) * (f + 0.3), g: GRAV * 0.55, roof: b.roof });
+    });
+    tower = [];
+    shake(1);
+    addText(L.collapsed, camX, camY + halfH * 0.2, 1.2, "#FFFFFF", "#FF7A8A", 1.6, 0, -0.05);
+    phase = "fail"; phaseT = now;
+  }
+
+  // ---- güncelleme ----
+  function update(dt) {
+    time += dt;
+    craneT += speed() * dt;
+    if (phase === "play" && !held && !fall) {
+      waitT -= dt;
+      if (waitT <= 0 && blocksLeft > 0) {
+        held = { roof: blocksLeft === 1 }; spawnT = 0;
+        if (held.roof) addText(L.last, camX, camY + halfH * 0.05, 0.85, "#FFF6B0", "#FF9E1C", 1.2, 0, 0);
+      }
+    }
+    if (held && spawnT < 1) { spawnT = Math.min(1, spawnT + dt / 0.36); ropeK = 0.3 + 0.7 * easeOutBack(spawnT); }
+    else if (!held) ropeK = lerp(ropeK, 0.3, 1 - Math.exp(-8 * dt));
+
+    // düşen blok
+    var steps = Math.ceil(dt / 0.008), h = dt / steps;
+    for (var st = 0; st < steps && fall; st++) {
+      var prevBottom = fall.y - BH / 2;
+      fall.vy -= GRAV * h; fall.y += fall.vy * h;
+      if (fever && !fall.assist) {
+        if (Math.abs(fall.x - topSurface().x) <= 0.8) fall.assist = true;
+        else { fever = 0; combo = 0; perfectRow = 0; fall.assist = "foul"; }
+      }
+      if (fall.assist === true) fall.x += (topSurface().x - fall.x) * Math.min(1, 12 * h);
+      else if (!fall.passed) { var nd = topSurface().x - fall.x; if (Math.abs(nd) < NUDGE_RANGE) fall.x += nd * (1 - Math.exp(-NUDGE_RATE * h)); }
+      var ts = topSurface(), bottom = fall.y - BH / 2;
+      if (!fall.passed && prevBottom >= ts.y && bottom <= ts.y) {
+        var dx = fall.x - ts.x;
+        if (Math.abs(dx) < BW / 2 + ts.half) {
+          if (Math.abs(dx) > ts.half && fall.assist !== true) {
+            debris.push({ x: fall.x, y: ts.y + BH / 2, vx: Math.sign(dx) * 1.8, vy: 0.5, ang: fall.ang, va: Math.sign(dx) * 4.5, g: GRAV, roof: fall.roof });
+            fall = null; missed(L.tipped);
+          } else { fall.y = ts.y + BH / 2; land(dx, fall.assist === true); }
+        } else fall.passed = true;
+      }
+      if (fall && (fall.y < camY - halfH - 2 || fall.y - BH / 2 < -0.45)) {
+        if (fall.y - BH / 2 < -0.45) debris.push({ x: fall.x, y: -0.45 + BH / 2, vx: 0, vy: 0, ang: fall.ang, va: 0, g: 0, roof: fall.roof, rest: 0 });
+        fall = null; missed(L.missed);
+      }
+    }
+
+    // kule salınımı
+    var n = tower.length, frozen = fever > 0;
+    wobbleVel += (-W_K * wobble - (frozen ? 14 : W_D) * wobbleVel) * dt; wobble += wobbleVel * dt;
+    var danger = clamp01((stability - 0.25) / 0.75);
+    var target = (Math.min(SWAY_MAX, SWAY_PER * n) + DANGER * danger * danger) * (frozen ? 0.25 : 1);
+    swayAmp = lerp(swayAmp, target, 1 - Math.exp(-1.5 * dt));
+    swayPhase += dt * (1.1 + Math.min(0.8, n * 0.01) + danger * 1.6);
+    sway = Math.sin(swayPhase) * swayAmp + wobble;
+    leanVis = lerp(leanVis, stability, 1 - Math.exp(-4 * dt));
+    tower.forEach(function (b) { b.squashVel += (-340 * b.squash - 17 * b.squashVel) * dt; b.squash += b.squashVel * dt; });
+    layout(dt);
+
+    debris.forEach(function (d) { d.vy -= d.g * dt; d.x += d.vx * dt; d.y += d.vy * dt; d.ang += d.va * dt; if (d.rest !== undefined) d.rest += dt; });
+    debris = debris.filter(function (d) { return d.y > camY - halfH - 4 && (d.rest === undefined || d.rest < 0.8); });
+
+    // kamera
+    var targetY = Math.max((0.5 - 0.2) * hh, n * BH + (0.5 - 0.36) * hh);
+    camY = lerp(camY, targetY, 1 - Math.exp(-4 * dt));
+    camX = lerp(camX, topBaseX() * 0.85, 1 - Math.exp(-2.5 * dt));
+    trauma = Math.max(0, trauma - 1.7 * dt);
+    var m = 0.4 * trauma * trauma;
+    shakeX = (Math.random() * 2 - 1) * m; shakeY = (Math.random() * 2 - 1) * m; shakeR = (Math.random() * 2 - 1) * 0.025 * trauma * trauma;
+
+    if (combo > 0 && fever === 0) { comboTimer -= dt; if (comboTimer <= 0) { combo = 0; missStreak = 0; } }
+    if (combo === 0) comboFeverUsed = false;
+    feverAlpha = lerp(feverAlpha, fever > 0 ? 0.32 : 0, 1 - Math.exp(-4 * dt));
+    popShown = lerp(popShown, population, 1 - Math.exp(-8 * dt));
+    for (var si = 0; si < 3; si++) {
+      if (!starsOn[si] && population >= STARS[si]) { starsOn[si] = 1; starPop[si] = 0; }
+      if (starsOn[si]) starPop[si] = Math.min(1, starPop[si] + dt / 0.35);
+    }
+
+    if (phase === "finish" && !fall && (now - phaseT) / 1000 > 0.9) {
+      phase = "win"; phaseT = now;
+      confetti(0, 0, 140, true);
+      if (tower.length) confetti(tower[tower.length - 1].x, tower[tower.length - 1].topY, 80);
+      addText(L.goal, camX, camY + halfH * 0.25, 1.2, "#FFF6B0", "#FF9E1C", 1.6, 0, -0.05);
+    }
+    if ((phase === "win" && (now - phaseT) / 1000 > 1.6) || (phase === "fail" && (now - phaseT) / 1000 > 1.5)) { phase = "end"; endT = now; }
+    if (phase === "play" && time > MAX_TIME && !fall) { phase = "end"; endT = now; }
+
+    clouds.forEach(function (c) { c.x += c.v * dt; if (c.x > 1.3) c.x = -0.3; });
+    fx.forEach(function (p) {
+      p.t += dt;
+      if (p.t < 0) return;
+      if (p.drag) { p.vx *= Math.exp(-p.drag * dt); p.vy *= Math.exp(-p.drag * dt); }
+      if (p.g) p.vy -= p.g * dt;
+      if (p.vx !== undefined) { p.x += p.vx * dt; p.y += p.vy * dt; }
+      if (p.vr) p.r += p.vr * dt;
+    });
+    fx = fx.filter(function (p) { return p.t < p.life; });
+    texts.forEach(function (x) { x.t += dt; });
+    texts = texts.filter(function (x) { return x.t < x.life; });
+  }
+
+  // ---- çizim yardımcıları ----
+  function SX(x) { return cw / 2 + (x - camX - shakeX) * ppu; }
+  function SY(y) { return ch / 2 - (y - camY - shakeY) * ppu; }
+
+  // (wx,wy) noktası görselin pivotu (px soldan, py alttan oran); w,h dünya birimi; rot tuval açısı
+  function sprite(im, wx, wy, w, h, px, py, rot) {
+    ctx.save();
+    ctx.translate(SX(wx), SY(wy));
+    if (rot) ctx.rotate(rot);
+    ctx.drawImage(im, -px * w * ppu, -(1 - py) * h * ppu, w * ppu, h * ppu);
+    ctx.restore();
+  }
+
+  // x,y gövde merkezi, rot tuval açısı; görselin pivotu bloğun altında (BlockController)
+  function drawBlock(x, y, rot, roof, sq) {
+    var s = sq || 0;
+    ctx.save();
+    ctx.translate(SX(x), SY(y));
+    if (rot) ctx.rotate(rot);
+    ctx.translate(0, BH / 2 * ppu);
+    ctx.scale(1 + s * 0.7, 1 - s);
+    if (roof) ctx.drawImage(img.roof, -0.5 * 2.98 * ppu, -(1 - 0.0271) * 2.89 * ppu, 2.98 * ppu, 2.89 * ppu);
+    else ctx.drawImage(img.block, -0.5 * 2.656 * ppu, -(1 - 0.0458) * 1.707 * ppu, 2.656 * ppu, 1.707 * ppu);
+    ctx.restore();
+  }
+
+  function font(px) { return "800 " + px + "px 'Baloo 2', 'Arial Rounded MT Bold', Arial, sans-serif"; }
+
+  function outlineText(s, x, y, px, top, bot, align, outline, maxW) {
+    ctx.font = font(px);
+    if (maxW) { var mw = ctx.measureText(s).width; if (mw > maxW) { px *= maxW / mw; ctx.font = font(px); } }
+    ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    if (outline !== 0) { ctx.lineWidth = px * (outline || 0.2); ctx.strokeStyle = INK; ctx.strokeText(s, x, y); }
+    if (bot && bot !== top) {
+      var g = ctx.createLinearGradient(0, y - px * 0.45, 0, y + px * 0.45);
+      g.addColorStop(0, top); g.addColorStop(1, bot); ctx.fillStyle = g;
+    } else ctx.fillStyle = top;
+    ctx.fillText(s, x, y);
+  }
+
+  // 9 parçalı çizim; b = [sol, alt, sağ, üst] kaynak piksel (Unity spriteBorder), k = kenar ölçeği
+  function nine(im, x, y, w, h, b, k) {
+    var sw = im.width, sh = im.height, l = b[0], bo = b[1], r = b[2], t = b[3];
+    var L2 = l * k, R2 = r * k, T2 = t * k, B2 = bo * k;
+    var cols = [[0, l, x, L2], [l, sw - l - r, x + L2, w - L2 - R2], [sw - r, r, x + w - R2, R2]];
+    var rows = [[0, t, y, T2], [t, sh - t - bo, y + T2, h - T2 - B2], [sh - bo, bo, y + h - B2, B2]];
+    for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) {
+      var c = cols[i], rr = rows[j];
+      if (c[1] <= 0 || rr[1] <= 0 || c[3] <= 0 || rr[3] <= 0) continue;
+      ctx.drawImage(im, c[0], rr[0], c[1], rr[1], c[2], rr[2], c[3], rr[3]);
+    }
+  }
+
+  function hexLerp(a, b, t) {
+    var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    var r = Math.round(lerp(pa >> 16, pb >> 16, t)), g = Math.round(lerp((pa >> 8) & 255, (pb >> 8) & 255, t)), bl = Math.round(lerp(pa & 255, pb & 255, t));
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1);
+  }
+  function smooth(a, b, t) { var x = clamp01((t - a) / (b - a)); return x * x * (3 - 2 * x); }
+
+  // ---- çizim ----
+  function draw() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    var alt = camY - camY0, floors = alt / BH + 4;
+    var seg = floors < SKY[1][0] ? 0 : 1;
+    var tt = smooth(0.4, 1, clamp01((floors - SKY[seg][0]) / (SKY[seg + 1][0] - SKY[seg][0])));
+    var top = hexLerp(SKY[seg][1], SKY[seg + 1][1], tt), bot = hexLerp(SKY[seg][2], SKY[seg + 1][2], tt);
+    var g = ctx.createLinearGradient(0, 0, 0, ch);
+    g.addColorStop(0, top); g.addColorStop(1, bot);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, cw, ch);
+
+    if (shakeR) { ctx.translate(cw / 2, ch / 2); ctx.rotate(shakeR); ctx.translate(-cw / 2, -ch / 2); }
+
+    clouds.forEach(function (c) {
+      ctx.globalAlpha = 0.95;
+      sprite(img.cloud, camX + (c.x - 0.5) * halfW * 2, c.y + alt * 0.4, 5 * c.s, 2.2 * c.s, 0.5, 0.5);
+    });
+    ctx.globalAlpha = 1;
+    if (feverAlpha > 0.01) { ctx.fillStyle = "rgba(26,8,82," + feverAlpha + ")"; ctx.fillRect(-cw, -ch, cw * 3, ch * 3); }
+
+    var backC = hexLerp(bot, "#6C5CD2", 0.38), frontC = hexLerp(bot, "#3E2C96", 0.6);
+    [["sky_back", backC, 0.3, 1], ["sky_front", frontC, 0.5, 1], ["sky_win", "#FFE68C", 0.5, 0.25]].forEach(function (Ly) {
+      var lx = (1 - Ly[2]) * camX, ly = -0.45 + (1 - Ly[2]) * alt;
+      ctx.globalAlpha = Ly[3];
+      for (var k = -1; k <= 1; k++) sprite(tinted(Ly[0], Ly[1]), lx + k * 36, ly, 36, 36 * 269 / 1152, 0.5, 0);
+    });
+    ctx.globalAlpha = 1;
+
+    var gw = 26, gh = 26 * 557 / 1664, gpy = 1 - 165 / 557;
+    for (var gk = -1; gk <= 1; gk++) sprite(img.ground, gk * gw, -0.45, gw, gh, 0.5, gpy);
+    var gy = SY(-0.45 - gh * gpy) - 1;
+    if (gy < ch) { ctx.fillStyle = "#3FA548"; ctx.fillRect(0, gy, cw, ch - gy); }
+    sprite(img.foundation, 0, 0.04, FOUND, FOUND * 96 / 426, 0.5, 1);
+
+    var glowOn = feverAlpha > 0.05;
+    tower.forEach(function (b) {
+      if (glowOn) {
+        ctx.globalAlpha = Math.min(1, feverAlpha * 2.5); ctx.globalCompositeOperation = "lighter";
+        sprite(tinted("glow", "#FFC94A"), b.x, b.y, BW * 1.35, BW * 1.35 * 310 / 432, 0.5, 0.5, b.ang);
+        ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+      }
+      drawBlock(b.x, b.y, b.ang, b.roof, b.squash);
+    });
+    debris.forEach(function (d) { ctx.globalAlpha = d.rest !== undefined ? Math.max(0, 1 - d.rest / 0.8) : 1; drawBlock(d.x, d.y, d.ang, d.roof, 0); });
+    ctx.globalAlpha = 1;
+    if (fall) drawBlock(fall.x, fall.y, fall.ang, fall.roof, 0);
+
+    // vinç
+    var c = crane(), cx = camX, cy = camY;
+    if (held) {
+      drawBlock(c.bx, c.by, -c.ang, held.roof, 0);
+      sprite(img.sling, cx + c.hx, cy + c.hy, BW * 0.36 * 2, SLING, 0.5, 1, -c.ang);
+    }
+    sprite(img.rope, cx + c.px, cy + c.py, 0.125, c.ropeLen, 0.5, 1, -c.ang);
+    var jibW = 2 * halfW + 2;
+    for (var jx = -jibW / 2; jx < jibW / 2; jx += 0.5) sprite(img.jib, cx + jx, cy + c.jy, 0.5, 0.5, 0, 0.5);
+    sprite(img.trolley, cx + c.x, cy + c.jy, 1.44, 0.59, 0.5, 0.5);
+    sprite(img.hook, cx + c.hx, cy + c.hy, 0.44, 0.44, 0.5, 0.5);
+
+    fx.forEach(function (p) {
+      if (p.t < 0) return;
+      var k = p.t / p.life;
+      if (p.k === "spark") { ctx.globalAlpha = 1 - k; sprite(tinted("spark", p.c), p.x, p.y, p.s * 2, p.s * 2, 0.5, 0.5); }
+      else if (p.k === "dust") { ctx.globalAlpha = 0.8 * (1 - k); var ds = p.s * (1 + k); sprite(img.dot, p.x, p.y, ds, ds, 0.5, 0.5); }
+      else if (p.k === "ring") { var e = 1 - Math.pow(1 - k, 3), rx = BW * (0.55 + e * 1.1) * 2; ctx.globalAlpha = 1 - k; sprite(tinted("ring", p.c), p.x, p.y, rx, rx * 0.3, 0.5, 0.5); }
+      else if (p.k === "conf") {
+        ctx.globalAlpha = k > 0.8 ? (1 - k) / 0.2 : 1;
+        ctx.save(); ctx.translate(SX(p.x), SY(p.y)); ctx.rotate(p.r); ctx.scale(1, Math.cos(p.r * 1.7));
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s * ppu / 2, -p.s * ppu / 4, p.s * ppu, p.s * ppu / 2); ctx.restore();
+      }
+    });
+    ctx.globalAlpha = 1;
+
+    texts.forEach(function (x) {
+      if (x.t < 0) return;
+      var k = x.t / x.life;
+      var sc = k < 0.2 ? Math.max(0.01, easeOutBack(k / 0.2)) : 1;
+      ctx.globalAlpha = k > 0.7 ? 1 - (k - 0.7) / 0.3 : 1;
+      ctx.save(); ctx.translate(SX(x.x), SY(x.y + 1.1 * k)); ctx.rotate(x.rot); ctx.scale(sc, sc);
+      outlineText(x.s, 0, 0, x.size * ppu, x.top, x.bot, "center", 0.22, cw * 0.9);
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (phase === "end") drawEnd(); else drawHud();
+  }
+
+  function drawHud() {
+    var u = ui, mid = cw / 2;
+    nine(img.row, 26 * u, 34 * u, 236 * u, 84 * u, [58, 54, 58, 54], 84 * u / 128);
+    outlineText(L.level, (26 + 118) * u, (34 + 44) * u, 40 * u, NAVY, null, "center", 0, 200 * u);
+    nine(img.counter, 26 * u, 132 * u, 236 * u, 92 * u, [90, 0, 39, 0], 92 * u / 84);
+    var ic = img.block, ih = 80 * ic.height / ic.width;
+    ctx.drawImage(ic, (26 + 12) * u, (132 + 46 - ih / 2) * u, 80 * u, ih * u);
+    outlineText(String(blocksLeft), (26 + 118 + 46) * u, (132 + 48) * u, 54 * u, "#FFFFFF", null, "center");
+
+    var gy = 22 * u;
+    nine(img.row, mid - 250 * u, gy + 6 * u, 500 * u, 236 * u, [58, 54, 58, 54], 236 * u / 128);
+    ctx.drawImage(img.pop, mid + (-186 - 42) * u, gy + (78 - 42) * u, 84 * u, 84 * u);
+    var next = starsOn[2] ? null : STARS[starsOn[1] ? 2 : starsOn[0] ? 1 : 0];
+    outlineText(String(Math.round(popShown)), mid + 64 * u, gy + 79 * u, 92 * u, NAVY, null, "right", 0);
+    outlineText(next ? "/ " + next : L.max, mid + 76 * u, gy + 98 * u, 44 * u, SUBNAVY, null, "left", 0);
+    var bx = mid - 215 * u, by = gy + 147 * u;
+    nine(img.track, bx, by, 430 * u, 58 * u, [52, 0, 52, 0], 58 * u / 101);
+    var fw = 420 * clamp01(popShown / STARS[2]);
+    if (fw > 2) nine(img.green, bx + 5 * u, by + 5 * u, Math.max(fw, 50) * u, 48 * u, [52, 0, 52, 0], 48 * u / 101);
+    for (var i = 0; i < 3; i++) {
+      var sx = bx + 5 * u + 420 * u * (i + 1) / 3, sy = by + 29 * u;
+      var on = starsOn[i], sz = 92 * u * (on ? easeOutBack(starPop[i]) : 1);
+      ctx.drawImage(on ? img.star : img.star_off, sx - sz / 2, sy - sz / 2, sz, sz);
+    }
+
+    if (combo > 0 || fever > 0) {
+      var pim = fever > 0 ? img.pill_gold : img.pill_pink, px = mid - 220 * u, py = 242 * u;
+      nine(pim, px, py, 440 * u, 116 * u, [60, 60, 60, 60], 116 * u / 132);
+      outlineText(fever > 0 ? L.fever : L.combo + (1 + combo), mid, py + 42 * u, 52 * u, "#FFFFFF", null, "center", undefined, 400 * u);
+      var tbx = mid - 165 * u, tby = py + 66 * u;
+      nine(img.bar_bg, tbx, tby, 330 * u, 30 * u, [38, 38, 38, 38], 30 * u / 80);
+      var frac = fever > 0 ? 1 : clamp01(comboTimer / comboWindow);
+      if (frac > 0.02) {
+        var col = fever > 0 ? "#FFFFFF" : (frac < 0.35 && Math.floor(now / 150) % 2 ? "#FF5959" : "#FFF26B");
+        ctx.drawImage(tinted("bar_fill", col), tbx + 6 * u, tby + 6 * u, 318 * u * frac, 18 * u);
+      }
+    }
+    if (fever > 0) outlineText(L.fever, mid, 470 * u, 92 * u, "#FFF6B0", "#FF4FB0", "center", undefined, 600 * u);
+    if (phase === "play" && tower.length < 2) outlineText(L.hint, mid, ch - 680 * u, 62 * u, "#FFFFFF", null, "center", undefined, cw - 80 * u);
+  }
+
+  function drawEnd() {
+    var t = (now - endT) / 1000, a = Math.min(1, t / 0.35), u = ui, mid = cw / 2;
+    ctx.fillStyle = "rgba(38,19,92," + 0.74 * a + ")"; ctx.fillRect(0, 0, cw, ch);
+    var cy = ch * 0.4;
+    var pop = t < 0.45 ? easeOutBack(t / 0.45) : 1, bob = Math.sin(t * 2.4) * 10 * u;
+    ctx.save(); ctx.translate(mid, cy - 290 * u + bob); ctx.scale(pop, pop);
+    ctx.fillStyle = "rgba(255,230,140,0.22)";
+    ctx.beginPath(); ctx.arc(0, 0, (262 + 8 * Math.sin(t * 3)) * u, 0, Math.PI * 2); ctx.fill();
+    ctx.drawImage(img.icon, -235 * u, -235 * u, 470 * u, 470 * u);   // dairesel görsel
+    ctx.lineWidth = 12 * u; ctx.strokeStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(0, 0, 235 * u, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    ctx.globalAlpha = a;
+    outlineText("Crane City", mid, cy + 60 * u, 150 * u, "#FFF6B0", "#FF9E1C", "center");
+    var earned = starsOn[0] + starsOn[1] + starsOn[2];
+    if (earned > 0 && !collapsed) for (var i = 0; i < 3; i++) ctx.drawImage(i < earned ? img.star : img.star_off, mid + (i - 1) * 120 * u - 55 * u, cy + 140 * u, 110 * u, 110 * u);
+    outlineText(collapsed ? L.again : L.tag, mid, cy + 310 * u, 60 * u, "#FFFFFF", null, "center", undefined, cw - 100 * u);
+    var bw = 640 * u, bh = 190 * u, bx = mid - bw / 2, by = cy + 400 * u, k = 1 + 0.05 * Math.sin(t * 6);
+    ctx.save(); ctx.translate(mid, by + bh / 2); ctx.scale(k, k); ctx.translate(-mid, -(by + bh / 2));
+    nine(img.btn, bx, by, bw, bh, [70, 70, 70, 70], bh / 200 * 0.9);
+    outlineText(L.play, mid, by + bh / 2 - 6 * u, 88 * u, "#FFFFFF", null, "center", undefined, bw - 90 * u);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function frame(ts) {
+    now = ts;
+    var dt = Math.min(0.05, (ts - last) / 1000);
+    last = ts;
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // yalnız deneme için: #test adresinde vinçteki bloğun kuleye uzaklığını verir
+  if (location.hash === "#test") window.ccOffset = function () { return held && spawnT >= 1 ? crane().bx - topSurface().x : null; };
+  if (location.hash === "#test") window.ccEnd = function () { starsOn = [1, 1, 0]; phase = "end"; endT = now; };
+  load();
+})();
+</script>
+</body>
+</html>
