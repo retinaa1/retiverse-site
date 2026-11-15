@@ -96,7 +96,8 @@ canvas{display:block;width:100%;height:100%}
   }
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);   // telefonda akıcılık için
+    scaledCache = {}; nineCache = {};
     var w = window.innerWidth, h = window.innerHeight;
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
     cw = cv.width; ch = cv.height;
@@ -455,26 +456,67 @@ canvas{display:block;width:100%;height:100%}
   function outlineText(s, x, y, px, top, bot, align, outline, maxW) {
     ctx.font = font(px);
     if (maxW) { var mw = ctx.measureText(s).width; if (mw > maxW) { px *= maxW / mw; ctx.font = font(px); } }
-    ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    ctx.textAlign = align || "center"; ctx.textBaseline = "alphabetic"; ctx.lineJoin = "round";
+    var capM = ctx.measureText("H"), cap = capM.actualBoundingBoxAscent || px * 0.7;
+    y += cap / 2;   // büyük harflerin ortası y'ye gelir
     if (outline !== 0) { ctx.lineWidth = px * (outline || 0.2); ctx.strokeStyle = INK; ctx.strokeText(s, x, y); }
     if (bot && bot !== top) {
-      var g = ctx.createLinearGradient(0, y - px * 0.45, 0, y + px * 0.45);
+      var g = ctx.createLinearGradient(0, y - cap * 1.1, 0, y + px * 0.12);
       g.addColorStop(0, top); g.addColorStop(1, bot); ctx.fillStyle = g;
     } else ctx.fillStyle = top;
     ctx.fillText(s, x, y);
   }
 
-  // 9 parçalı çizim; b = [sol, alt, sağ, üst] kaynak piksel (Unity spriteBorder), k = kenar ölçeği
-  function nine(im, x, y, w, h, b, k) {
-    var sw = im.width, sh = im.height, l = b[0], bo = b[1], r = b[2], t = b[3];
-    var L2 = l * k, R2 = r * k, T2 = t * k, B2 = bo * k;
-    var cols = [[0, l, x, L2], [l, sw - l - r, x + L2, w - L2 - R2], [sw - r, r, x + w - R2, R2]];
-    var rows = [[0, t, y, T2], [t, sh - t - bo, y + T2, h - T2 - B2], [sh - bo, bo, y + h - B2, B2]];
-    for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) {
-      var c = cols[i], rr = rows[j];
-      if (c[1] <= 0 || rr[1] <= 0 || c[3] <= 0 || rr[3] <= 0) continue;
-      ctx.drawImage(im, c[0], rr[0], c[1], rr[1], c[2], rr[2], c[3], rr[3]);
+  // 9 parçalı çizim; b = [sol, alt, sağ, üst] kaynak piksel (Unity spriteBorder), k = kenar ölçeği.
+  // Parçalar ayrı tuvallere bölünür ve tam piksele oturtulur: komşu pikseller sızıp çizgi yapmaz.
+  var pieceCache = {};
+  function pieces(im, b) {
+    var id = im.src + b.join(",");
+    if (pieceCache[id]) return pieceCache[id];
+    var sw = im.width, sh = im.height, xs = [0, b[0], sw - b[2], sw], ys = [0, b[3], sh - b[1], sh], out = [];
+    for (var j = 0; j < 3; j++) for (var i = 0; i < 3; i++) {
+      var w = xs[i + 1] - xs[i], h = ys[j + 1] - ys[j];
+      if (w <= 0 || h <= 0) { out.push(null); continue; }
+      var c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(im, xs[i], ys[j], w, h, 0, 0, w, h);
+      out.push(c);
     }
+    return (pieceCache[id] = out);
+  }
+  function nine(im, x, y, w, h, b, k) {
+    var p = pieces(im, b);
+    var X = [x, x + b[0] * k, x + w - b[2] * k, x + w].map(Math.round);
+    var Y = [y, y + b[3] * k, y + h - b[1] * k, y + h].map(Math.round);
+    for (var j = 0; j < 3; j++) for (var i = 0; i < 3; i++) {
+      var c = p[j * 3 + i], dw = X[i + 1] - X[i], dh = Y[j + 1] - Y[j];
+      if (c && dw > 0 && dh > 0) ctx.drawImage(c, X[i], Y[j], dw, dh);
+    }
+  }
+
+  // 9 parçalı görseli tek parça olarak önceden birleştirir (ölçeklenerek çizilecek düğme için)
+  var nineCache = {};
+  function nineBaked(im, w, h, b, k) {
+    var W = Math.round(w), H = Math.round(h), id = im.src + W + "x" + H + k.toFixed(3);
+    if (nineCache[id]) return nineCache[id];
+    var c = document.createElement("canvas"); c.width = W; c.height = H;
+    var keep = ctx; ctx = c.getContext("2d"); nine(im, 0, 0, W, H, b, k); ctx = keep;
+    return (nineCache[id] = c);
+  }
+
+  // büyük arka plan görselleri ekran boyutuna bir kez ölçeklenip saklanır, her karede yalnız kopyalanır
+  var scaledCache = {};
+  function blit(src, id, wx, wy, w, h, px, py) {
+    var wp = Math.round(w * ppu), hp = Math.round(h * ppu);
+    if (wp < 1 || hp < 1) return;
+    var key = id + ":" + wp + "x" + hp, c = scaledCache[key];
+    if (!c) {
+      c = document.createElement("canvas"); c.width = wp; c.height = hp;
+      var x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, wp, hp);
+      scaledCache[key] = c;
+    }
+    var dx = Math.round(SX(wx) - px * wp), dy = Math.round(SY(wy) - (1 - py) * hp);
+    if (dx > cw || dy > ch || dx + wp < 0 || dy + hp < 0) return;
+    ctx.drawImage(c, dx, dy);
   }
 
   function hexLerp(a, b, t) {
@@ -500,7 +542,7 @@ canvas{display:block;width:100%;height:100%}
 
     clouds.forEach(function (c) {
       ctx.globalAlpha = 0.95;
-      sprite(img.cloud, camX + (c.x - 0.5) * halfW * 2, c.y + alt * 0.4, 5 * c.s, 2.2 * c.s, 0.5, 0.5);
+      blit(img.cloud, "cloud", camX + (c.x - 0.5) * halfW * 2, c.y + alt * 0.4, 5 * c.s, 2.2 * c.s, 0.5, 0.5);
     });
     ctx.globalAlpha = 1;
     if (feverAlpha > 0.01) { ctx.fillStyle = "rgba(26,8,82," + feverAlpha + ")"; ctx.fillRect(-cw, -ch, cw * 3, ch * 3); }
@@ -509,12 +551,12 @@ canvas{display:block;width:100%;height:100%}
     [["sky_back", backC, 0.3, 1], ["sky_front", frontC, 0.5, 1], ["sky_win", "#FFE68C", 0.5, 0.25]].forEach(function (Ly) {
       var lx = (1 - Ly[2]) * camX, ly = -0.45 + (1 - Ly[2]) * alt;
       ctx.globalAlpha = Ly[3];
-      for (var k = -1; k <= 1; k++) sprite(tinted(Ly[0], Ly[1]), lx + k * 36, ly, 36, 36 * 269 / 1152, 0.5, 0);
+      for (var k = -1; k <= 1; k++) blit(tinted(Ly[0], Ly[1]), Ly[0] + Ly[1], lx + k * 36, ly, 36, 36 * 269 / 1152, 0.5, 0);
     });
     ctx.globalAlpha = 1;
 
     var gw = 26, gh = 26 * 557 / 1664, gpy = 1 - 165 / 557;
-    for (var gk = -1; gk <= 1; gk++) sprite(img.ground, gk * gw, -0.45, gw, gh, 0.5, gpy);
+    for (var gk = -1; gk <= 1; gk++) blit(img.ground, "ground", gk * gw, -0.45, gw, gh, 0.5, gpy);
     var gy = SY(-0.45 - gh * gpy) - 1;
     if (gy < ch) { ctx.fillStyle = "#3FA548"; ctx.fillRect(0, gy, cw, ch - gy); }
     sprite(img.foundation, 0, 0.04, FOUND, FOUND * 96 / 426, 0.5, 1);
@@ -633,8 +675,8 @@ canvas{display:block;width:100%;height:100%}
     outlineText(collapsed ? L.again : L.tag, mid, cy + 310 * u, 60 * u, "#FFFFFF", null, "center", undefined, cw - 100 * u);
     var bw = 640 * u, bh = 190 * u, bx = mid - bw / 2, by = cy + 400 * u, k = 1 + 0.05 * Math.sin(t * 6);
     ctx.save(); ctx.translate(mid, by + bh / 2); ctx.scale(k, k); ctx.translate(-mid, -(by + bh / 2));
-    nine(img.btn, bx, by, bw, bh, [70, 70, 70, 70], bh / 200 * 0.9);
-    outlineText(L.play, mid, by + bh / 2 - 6 * u, 88 * u, "#FFFFFF", null, "center", undefined, bw - 90 * u);
+    ctx.drawImage(nineBaked(img.btn, bw, bh, [70, 70, 70, 70], bh / 200 * 0.9), bx, by, bw, bh);
+    outlineText(L.play, mid, by + bh * 0.45, 88 * u, "#FFFFFF", null, "center", undefined, bw - 90 * u);
     ctx.restore();
     ctx.globalAlpha = 1;
   }
