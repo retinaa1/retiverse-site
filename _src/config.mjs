@@ -13,7 +13,7 @@ export default {
   crane: {
     // Oyun Google Play'de yayına girince true yap: "Çok yakında" yazısı gerçek
     // "Google Play'den indir" düğmesine dönüşür ve yapılandırılmış veriye mağaza linki eklenir.
-    playStoreLive: false,
+    playStoreLive: true,
     playStoreUrl: "https://play.google.com/store/apps/details?id=com.retiversegames.cranecity",
     // Yayından önce "Erken test için yaz" kutusu gösterilsin mi (kapalı test için gönüllü toplamak)?
     testerSignup: false,
