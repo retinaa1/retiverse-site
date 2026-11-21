@@ -15,6 +15,9 @@ export default {
     // "Google Play'den indir" düğmesine dönüşür ve yapılandırılmış veriye mağaza linki eklenir.
     playStoreLive: true,
     playStoreUrl: "https://play.google.com/store/apps/details?id=com.retiversegames.cranecity",
+    // Oyun App Store'da yayına girince true yap: "Çok yakında App Store'da" yazısı gerçek indirme düğmesine döner.
+    appStoreLive: false,
+    appStoreUrl: "https://apps.apple.com/app/id6836586900",
     // Yayından önce "Erken test için yaz" kutusu gösterilsin mi (kapalı test için gönüllü toplamak)?
     testerSignup: false,
   },

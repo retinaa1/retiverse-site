@@ -33,7 +33,22 @@ export function playUrl(c) {
 }
 
 export function playCta(c) {
-  return storeCta(c, c.cfg.crane);
+  return storeCta(c, c.cfg.crane) + appStoreCta(c, c.cfg.crane);
+}
+
+// App Store button (only for games that have appStoreUrl in config.mjs): real link once live, "coming soon" before that.
+export function appStoreCta(c, game) {
+  if (!game.appStoreUrl) return "";
+  if (game.appStoreLive) {
+    return `<a class="play-btn" href="${game.appStoreUrl}" rel="noopener">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><small>${c.t("Download on the", "Hemen indir")}</small>App Store</span>
+    </a>`;
+  }
+  return `<span class="play-btn is-soon">
+      <span class="pulse" aria-hidden="true"></span>
+      <span><small>${c.t("Coming soon to the", "Çok yakında")}</small>${c.t("App Store", "App Store'da")}</span>
+    </span>`;
 }
 
 // Shared by every game page: `game` is that game's block in config.mjs.
